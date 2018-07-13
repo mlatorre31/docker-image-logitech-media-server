@@ -4,14 +4,16 @@ MAINTAINER Lars Kellogg-Stedman <lars@oddbit.com>
 ENV SQUEEZE_VOL /srv/squeezebox
 ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND noninteractive
-ENV PACKAGE_VERSION_URL=http://www.mysqueezebox.com/update/?version=7.9.0&revision=1&geturl=1&os=deb
+ENV BASESERVER_URL=http://downloads.slimdevices.com/nightly/7.9/sc/
 
 RUN apt-get update && \
 	apt-get -y install curl wget faad flac lame sox libio-socket-ssl-perl && \
 	apt-get clean
 
-RUN url=$(curl "$PACKAGE_VERSION_URL" | sed 's/_all\.deb/_amd64\.deb/') && \
-	curl -Lsf -o /tmp/logitechmediaserver.deb $url && \
+RUN 	RELEASE=`curl -Lsf -o - "${BASESERVER_URL}?C=M;O=A" | grep DIR | sed -e '$!d' -e 's/.*href="//' -e 's/".*//'` && \
+	MEDIAFILE=`curl -Lsf -o - "${BASESERVER_URL}${RELEASE}" | grep _amd64.deb | sed -e '$!d' -e 's/.*href="//' -e 's/".*//'` && \
+	MEDIASERVER_URL="${BASESERVER_URL}${RELEASE}${MEDIAFILE}" && \
+	curl -Lsf -o /tmp/logitechmediaserver.deb $MEDIASERVER_URL && \
 	dpkg -i /tmp/logitechmediaserver.deb && \
 	rm -f /tmp/logitechmediaserver.deb && \
 	apt-get clean
