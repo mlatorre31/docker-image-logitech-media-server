@@ -7,8 +7,12 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV BASESERVER_URL=http://downloads.slimdevices.com/nightly/7.9/sc/
 
 RUN apt-get update && \
-	apt-get -y install curl wget faad flac lame sox libio-socket-ssl-perl && \
+	apt-get -y install curl wget faad flac lame sox libio-socket-ssl-perl tzdata && \
 	apt-get clean
+	
+RUN echo $TZ > /etc/timezone && \
+	rm /etc/localtime && \
+	dpkg-reconfigure -f noninteractive tzdata
 
 RUN 	RELEASE=`curl -Lsf -o - "${BASESERVER_URL}?C=M;O=A" | grep DIR | sed -e '$!d' -e 's/.*href="//' -e 's/".*//'` && \
 	MEDIAFILE=`curl -Lsf -o - "${BASESERVER_URL}${RELEASE}" | grep _amd64.deb | sed -e '$!d' -e 's/.*href="//' -e 's/".*//'` && \
